@@ -11,9 +11,21 @@ supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVIC
 @api_view(['GET'])
 def get_exhibition_list(request):
   try:
-    # TODO
-    # 전시회 목록 반환환
-    pass
+    exhibitions = supabase.table('exhibition').select('*').execute()
+
+    # 데이터 정리
+    exhibition_list = []
+    for exhibition in exhibitions:
+        exhibition_data = {
+          'exhibitionId': exhibition['id'],
+          'exhibitionName': exhibition['name'],
+          'exhibitionImageUrl': exhibition['image_url'],
+          'exhibitionDescription': exhibition['description'],
+          'exhibitionPeriod': exhibition['period']
+        }
+        exhibition_list.append(exhibition_data)
+    
+    return Response(exhibition_list, status=status.HTTP_200_OK)
   except:
     return Response({'error': 'get exhibition list failed!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
   
