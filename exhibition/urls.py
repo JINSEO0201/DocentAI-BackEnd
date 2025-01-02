@@ -2,5 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('google/login/', views.google_login, name='google_login'),
+    path('exhibition/list/', views.get_exhibition_list, name='get_exhibition_list'),
+    path('exhibition/detail/<int:exhibition_id>/', views.get_exhibition_detail, name='get_exhibition_detail'),
 ]
