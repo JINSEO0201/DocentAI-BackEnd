@@ -29,7 +29,11 @@ environ.Env.read_env(
   env_file=os.path.join(BASE_DIR, '.env')
 )
 
+# 환경 변수 설정
 SECRET_KEY =env('SECRET_KEY')
+SUPABASE_URL = env('SUPABASE_URL')
+SUPABASE_KEY = env('SUPABASE_KEY')
+SUPABASE_SERVICE_ROLE_KEY = env('SUPABASE_SERVICE_ROLE_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -50,6 +54,9 @@ INSTALLED_APPS = [
     'chat',
     'exhibition',
     'artwork',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
