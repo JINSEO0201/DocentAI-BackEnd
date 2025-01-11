@@ -54,5 +54,52 @@ def kakao_callback(request):
     response.set_cookie('refresh_token', value=str(refresh_token)) #httponly=True, secure=True
     return response
 
+@api_view(['POST'])
+def logout(request):
+    # supabase refresh_token 무효화 생략 (다음 로그인 시 자동 갱신)
+
+    access_token = request.COOKIES.get('access_token')
+    refresh_token = request.COOKIES.get('refresh_token')
+
+    if not access_token or not refresh_token:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # 쿠키에서 Access Token과 Refresh Token을 삭제
+    response = Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+    response.delete_cookie('access_token')
+    response.delete_cookie('refresh_token')
+    return response
+
+
+@api_view(['POST'])
+def refresh_token(request):
+    # 클라이언트에서 refresh token을 전달받음
+    refresh_token = request.COOKIES.get('refresh_token')
+
+    if not refresh_token:
+        return Response({'error': 'No refresh token provided'}, status=400)
+
+    # Supabase의 token 엔드포인트로 refresh_token을 보내 새로운 access_token 요청
+    response = request.post(
+        f"{settings.SUPABASE_URL}/auth/v1/token",
+        data={
+            'grant_type': 'refresh_token',
+            'refresh_token': refresh_token,
+            'client_id': settings.KAKAO_REST_API_KEY,
+            'client_secret': settings.KAKAO_SECRET_CODE,
+        }
+    )
+
+    tokens = response.json()
+    access_token = tokens.get('access_token')
+
+    if not access_token:
+        return Response({'error': 'Failed to refresh access token'}, status=400)
+
+    # 새로운 access_token을 클라이언트에게 전달
+    response = Response({'message': 'Token refreshed successfully'})
+    response.set_cookie('access_token', value=access_token, httponly=True, secure=True)
+    return response
+
 
 # 보안 강화를 위해 refresh token을 세션 저장소나, 암호화 후 데이터베이스에 저장하는 방법 사용 가능. 추후 개발
