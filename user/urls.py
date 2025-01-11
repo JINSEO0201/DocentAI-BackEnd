@@ -2,5 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # path('google/login/', views.google_login, name='google_login'),
+    path('kakao/login/', views.kakao_login, name='kakao_login'),
+    path('kakao/callback', views.kakao_callback, name='kakao_callback'),
 ]
