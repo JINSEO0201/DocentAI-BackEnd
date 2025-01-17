@@ -41,9 +41,9 @@ KAKAO_SECRET_CODE = env('KAKAO_SECRET_CODE')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost:3000', '127.0.0.1', 'localhost:8000']
 
 
 # Application definition
@@ -146,3 +146,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 커스텀 유저 모델 사용
+AUTH_USER_MODEL = 'user.User'
+
+# JWT 사용
+REST_USE_JWT = True
+
+REST_FRAMEWORK = {
+  'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny', # 개발 단계. 모두 풀어줌
+        #'rest_framework.permissions.IsAuthenticated',  # 인증된 사용자만 접근 가능 (프로덕션)
+    ],
+  'DEFAULT_AUTHENTICATION_CLASSES': [
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
+  ]
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180), ### 1 -> access token의 수명을 30분으로 설정 #잠시만 3시간으로 할게요 ㅠ
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1), ### 1 -> refresh token의 수명을 하루로 설정
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer', ), ### 2 -> 토큰 인증 방식을 bearer로 설정
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken', ),
+    'ACCESS_TOKEN': 'access_token',
+    'REFRESH_TOKEN': 'refresh_token',
+}
