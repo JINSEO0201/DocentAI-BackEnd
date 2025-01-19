@@ -31,8 +31,9 @@ def kakao_login(request):
 def kakao_callback(request):
     # access token(supabase) 받기
     access_token = request.data.get('access_token')
+    refresh_token = request.data.get('refresh_token')
 
-    if not access_token:
+    if not access_token or not refresh_token:
         return Response({'error': '구글 로그인 중 오류가 발생했습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -49,6 +50,11 @@ def kakao_callback(request):
 
     # 장고 유저 get or create
     user = get_or_create_user_from_supabase(supabase_user_info)
+
+    # 장고 DB에 supabase token 저장
+    user.access = str(access_token)
+    user.refresh = str(refresh_token)
+    user.save()
 
     # Django JWT 생성
     refresh = RefreshToken.for_user(user)
