@@ -59,7 +59,7 @@ def get_exhibition_detail(request, exhibition_id):
     user_supabase = supabase.auth.get_user(user_access)
     user_id_supabase = user_supabase.user.id
 
-    chats = supabase.table('chat').select('id').eq('exhibition_id', exhibition_id).execute()
+    chats = supabase.table('chat').select('id').eq('exhibition_id', exhibition_id).eq('user_id', user_id_supabase).execute()
 
     chat_list = []
     for artwork in artworks:
