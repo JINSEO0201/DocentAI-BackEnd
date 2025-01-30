@@ -30,26 +30,34 @@ def kakao_login(request):
 @permission_classes([AllowAny])
 def kakao_callback(request):
     # access token(supabase) 받기
-    access_token = request.data.get('access_token')
-    refresh_token = request.data.get('refresh_token')
+    try:
+        access_token = request.GET.get('access_token')
+        refresh_token = request.GET.get('refresh_token')
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     if not access_token or not refresh_token:
-        return Response({'error': '구글 로그인 중 오류가 발생했습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': '토큰이 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     # supabase에서 유저 정보 받아오기
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
-    }
-    response = requests.get(f"{settings.SUPABASE_URL}/auth/v1/user", headers=headers)
+    try:
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
+        }
+        response = requests.get(f"{settings.SUPABASE_URL}/auth/v1/user", headers=headers)
     
-    if response.status_code == 200:
-        supabase_user_info = response.json()  # User info
+        if response.status_code == 200:
+            supabase_user_info = response.json()  # User info
+    except:
+        return Response({'error' : 'DB 연결 오류'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-
-    # 장고 유저 get or create
-    user = get_or_create_user_from_supabase(supabase_user_info)
+    try:
+        # 장고 유저 get or create
+        user = get_or_create_user_from_supabase(supabase_user_info)
+    except:
+        return Response(supabase_user_info, status=status.HTTP_403_FORBIDDEN)
 
     # 장고 DB에 supabase token 저장
     user.access = str(access_token)
@@ -128,13 +136,12 @@ def get_or_create_user_from_supabase(supabase_user_info):
     
     user, created = User.objects.get_or_create(
         email=email,
-        defaults={"username": email},
+        # defaults={"username": email},
     )
 
     # User 정보 업데이트
     if created:
         user.full_name = full_name
         user.save()
-
 
     return user
